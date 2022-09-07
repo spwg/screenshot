@@ -4,9 +4,11 @@ package upload
 import (
 	"errors"
 	"fmt"
+	"html"
 	"io"
 	"log"
 	"net/http"
+	"strings"
 
 	"github.com/spwg/screenshot/internal/datastore"
 )
@@ -45,10 +47,10 @@ func (e *Endpoint) Handler(resp http.ResponseWriter, req *http.Request) {
 		return
 	}
 	if contentType := header.Header.Get("Content-Type"); contentType != "image/png" {
-		http.Error(resp, fmt.Sprintf("%q is not %q, it's %q.", header.Filename, "image/png", contentType), http.StatusBadRequest)
+		http.Error(resp, fmt.Sprintf("%q is not %q, it's %q.", escape(header.Filename), "image/png", contentType), http.StatusBadRequest)
 		return
 	}
-	log.Printf("%q %v bytes", header.Filename, header.Size)
+	log.Printf("%q %v bytes", escape(header.Filename), header.Size)
 	b, err := io.ReadAll(file)
 	if err != nil {
 		log.Print(err)
@@ -71,4 +73,11 @@ func validateRequest(req *http.Request) (int, error) {
 		return http.StatusMethodNotAllowed, fmt.Errorf("http method %q not allowed", req.Method)
 	}
 	return http.StatusOK, nil
+}
+
+func escape(s string) string {
+	s = html.EscapeString(s)
+	s = strings.ReplaceAll(s, "\n", "")
+	s = strings.ReplaceAll(s, "\r", "")
+	return s
 }

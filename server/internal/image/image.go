@@ -3,6 +3,7 @@ package image
 
 import (
 	"fmt"
+	"html"
 	"log"
 	"net/http"
 	"strings"
@@ -36,14 +37,14 @@ func (e *Endpoint) Handler(resp http.ResponseWriter, req *http.Request) {
 	split := strings.Split(strings.TrimPrefix(req.URL.Path, "/"), "/")
 	found := len(split) == 2
 	if !found {
-		http.Error(resp, fmt.Sprintf("Invalid path %q.", req.URL.Path), http.StatusBadRequest)
+		http.Error(resp, fmt.Sprintf("Invalid path %q.", html.EscapeString(req.URL.Path)), http.StatusBadRequest)
 		return
 	}
 	s := strings.TrimSuffix(split[1], ".png")
 	id, err := uuid.Parse(s)
 	if err != nil {
 		log.Print(err)
-		http.Error(resp, fmt.Sprintf("%q is not a valid ID.", s), http.StatusBadRequest)
+		http.Error(resp, fmt.Sprintf("%q is not a valid ID.", html.EscapeString(s)), http.StatusBadRequest)
 		return
 	}
 	image, url, err := e.db.Fetch(ctx, id)

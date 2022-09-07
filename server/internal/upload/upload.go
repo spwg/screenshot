@@ -47,7 +47,7 @@ func (e *Endpoint) Handler(resp http.ResponseWriter, req *http.Request) {
 		return
 	}
 	if contentType := header.Header.Get("Content-Type"); contentType != "image/png" {
-		http.Error(resp, fmt.Sprintf("%q is not %q, it's %q.", escape(header.Filename), "image/png", contentType), http.StatusBadRequest)
+		http.Error(resp, fmt.Sprintf("%q is not %q, it's %q.", escape(header.Filename), "image/png", html.EscapeString(contentType)), http.StatusBadRequest)
 		return
 	}
 	log.Printf("%q %v bytes", escape(header.Filename), header.Size)
